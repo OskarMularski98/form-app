@@ -11,7 +11,6 @@
       :value="value"
       @input="$emit('input', $event.target.value)"
       class="form-control"
-      maxlength="255"
       @blur="$emit('blur', $event.target.value)"
     ></textarea>
     <div

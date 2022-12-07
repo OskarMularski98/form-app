@@ -9,11 +9,11 @@
   },
   "dependencies": {
     "@babel/preset-env": "^7.20.2",
+    "@popperjs/core": "^2.11.6",
     "axios": "^1.2.1",
     "bootstrap": "^5.2.3",
     "core-js": "^3.8.3",
     "vue": "^2.6.14",
-    "vue-axios": "^3.5.2",
     "vuex": "^3.6.2"
   },
   "devDependencies": {

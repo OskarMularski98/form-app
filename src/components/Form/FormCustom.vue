@@ -110,6 +110,7 @@ import ButtonCustom from "@/components/Form/UI/ButtonCustom.vue";
 import ErrorView from "@/components/validation/ErrorCustom.vue";
 import SelectCustom from "./UI/SelectCustom.vue";
 import AlertCustom from "@/components/Form/UI/AlertCustom.vue";
+import axios from "axios";
 export default {
   components: {
     AreaText,
@@ -202,7 +203,7 @@ export default {
         this.form.vat = null;
         this.form.priceNetto = "";
         try {
-          await this.$http.post(
+          await axios.post(
             `https://form-app-om-default-rtdb.firebaseio.com/forms.json`,
             data
           );
@@ -222,7 +223,7 @@ export default {
       if (this.form.description === "") {
         this.error.description.isValid = false;
         this.error.description.text = "Text is required.";
-      } else if (this.form.description.length >= this.maxLength) {
+      } else if (this.form.description.length > this.maxLength) {
         this.error.description.isValid = false;
         this.error.description.text = `You can't enter more than 255 characters.`;
       } else {
