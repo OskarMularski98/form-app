@@ -2,7 +2,6 @@
   <div>
     <label
       class="form-label"
-      :class="{ invalid: isValid === false }"
       :for="text"
     >
       {{ text }}
@@ -16,7 +15,7 @@
       @blur="$emit('blur', $event.target.value)"
     ></textarea>
     <div
-      class="form-label mb-0"
+      class="form-label text-length mb-0"
       :class="{ invalid: isValid === false }"
     >
       {{ textLength }}/{{ maxLength }}
@@ -36,7 +35,6 @@ export default {
       },
     };
   },
-  methods: {},
 };
 </script>
 
@@ -44,7 +42,7 @@ export default {
 .form-control.invalid {
   border-color: red;
 }
-.form-label.invalid {
+.form-label.invalid.text-length {
   color: red;
 }
 </style>

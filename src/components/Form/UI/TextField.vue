@@ -1,10 +1,13 @@
 <template>
   <div>
-    <label class="form-label"> {{ text }} </label>
+    <label class="form-label">
+      {{ text }}
+    </label>
     <input
       :value="value"
       @input="$emit('input', $event.target.value)"
       :disabled="isDisabled"
+      :class="{ invalid: isValid === false }"
       class="form-control"
       type="text"
     />
@@ -13,25 +16,12 @@
 
 <script>
 export default {
-  props: ["text", "value", "isDisabled"],
-  // props: {
-  //   text: {
-  //     type: String,
-  //     default: "",
-  //     required: true,
-  //   },
-  //   value: {
-  //     type: Number,
-  //     default: null,
-  //     required: true,
-  //   },
-  //   isDisabled: {
-  //     type: Boolean,
-  //     default: true,
-  //     required: false,
-  //   },
-  // },
+  props: ["text", "value", "isDisabled", "isValid"],
 };
 </script>
 
-<style></style>
+<style scoped>
+.form-control.invalid {
+  border-color: red;
+}
+</style>

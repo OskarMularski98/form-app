@@ -4,6 +4,7 @@
       class="form-check-input"
       @change="$emit('change', $event.target.value)"
       :name="name"
+      :class="{ invalid: isValid === false }"
       :value="value"
       type="radio"
       :id="id"
@@ -15,10 +16,9 @@
 <script>
 export default {
   model: {
-    prop: "modalValue",
     event: "change",
   },
-  props: ["text", "name", "id", "value"],
+  props: ["text", "name", "id", "value", "isValid"],
   data() {
     return {
       validConfirmation: {
@@ -27,13 +27,11 @@ export default {
       },
     };
   },
-  methods: {},
-  computed: {
-    isSelected() {
-      return this.modalValue == this.value;
-    },
-  },
 };
 </script>
 
-<style></style>
+<style scoped>
+.form-check-input.invalid {
+  border-color: red;
+}
+</style>

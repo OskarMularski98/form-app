@@ -2,10 +2,12 @@
   <div
     class="container-fluid form d-flex align-items-center justify-content-center"
   >
-    <div
-      class="row col-xxl-4 col-xl-6 col-md-8 col-sm-10 p-5 bg-light bg-gradient"
-    >
-      <form v-if="!isSubmited" @submit.prevent="submitForm">
+    <div class="row col-xxl-4 col-xl-6 col-md-8 col-sm-10">
+      <form
+        class="bg-light bg-gradient p-5"
+        v-if="!$store.getters['moduleForm/getSubmit']"
+        @submit.prevent="submitForm"
+      >
         <h3 class="text-center">Form</h3>
 
         <area-text
@@ -29,17 +31,17 @@
         <radio-button
           id="confirmTrue"
           v-model="form.confirmation"
-          @custom-change="handleCustomChange"
           name="confirm"
           text="Yes"
           :value="true"
+          :isValid="error.confirmation.isValid"
           @change="validateConfirmation"
         ></radio-button>
         <radio-button
           id="confirmFalse"
           name="confirm"
+          :isValid="error.confirmation.isValid"
           :value="false"
-          @custom-change="handleCustomChange"
           v-model="form.confirmation"
           @change="validateConfirmation"
           text="No"
@@ -48,7 +50,7 @@
           :isValid="error.confirmation.isValid"
           :text="error.confirmation.text"
         ></error-view>
-        <select-view
+        <select-custom
           v-model="form.vat"
           id="vat"
           name="vat"
@@ -56,7 +58,7 @@
           :isValid="error.vat.isValid"
           text="Choose VAT"
           @input="validateVat"
-        ></select-view>
+        ></select-custom>
         <error-view
           :isValid="error.vat.isValid"
           :text="error.vat.text"
@@ -66,6 +68,7 @@
           :isDisabled="form.vat !== null ? false : true"
           v-model="form.priceNetto"
           @input="validateNetto"
+          :isValid="error.priceNetto.isValid"
         ></text-field>
         <error-view
           :isValid="error.priceNetto.isValid"
@@ -76,11 +79,25 @@
           v-model="priceBrutto"
           :isDisabled="true"
         ></text-field>
-        <button-view></button-view>
+        <button-custom
+          customClass="btn btn-warning mt-4 rounded-pill"
+          text="Submit"
+        ></button-custom>
       </form>
-      <div v-if="isSubmited">
-        {{ form }}
-      </div>
+      <alert-custom
+        v-if="$store.getters['moduleForm/getSubmit']"
+        :text="formValid ? alert.text.success : alert.text.error"
+        :customClass="formValid ? alert.classes.success : alert.classes.error"
+        :title="formValid ? alert.title.success : alert.title.error"
+      >
+        <button-custom
+          @click="submitAgain"
+          :text="formValid ? button.text.success : button.text.error"
+          :customClass="
+            formValid ? button.classes.success : button.classes.error
+          "
+        ></button-custom>
+      </alert-custom>
     </div>
   </div>
 </template>
@@ -89,22 +106,23 @@
 import AreaText from "@/components/Form/UI/AreaText.vue";
 import RadioButton from "@/components/Form/UI/RadioButton.vue";
 import TextField from "@/components/Form/UI/TextField.vue";
-import ButtonView from "@/components/Form/UI/ButtonView.vue";
-import ErrorView from "@/components/validation/ErrorView.vue";
-import SelectView from "./UI/SelectView.vue";
-import axios from "axios";
+import ButtonCustom from "@/components/Form/UI/ButtonCustom.vue";
+import ErrorView from "@/components/validation/ErrorCustom.vue";
+import SelectCustom from "./UI/SelectCustom.vue";
+import AlertCustom from "@/components/Form/UI/AlertCustom.vue";
 export default {
   components: {
     AreaText,
     RadioButton,
-    ButtonView,
+    ButtonCustom,
     TextField,
     ErrorView,
-    SelectView,
+    SelectCustom,
+    AlertCustom,
   },
   data() {
     return {
-      isValid: true,
+      formValid: true,
       form: {
         description: "",
         confirmation: null,
@@ -133,6 +151,30 @@ export default {
           text: "",
         },
       },
+      button: {
+        classes: {
+          success: "btn btn-success",
+          error: "btn btn-danger",
+        },
+        text: {
+          success: "Send again",
+          error: "Try again",
+        },
+      },
+      alert: {
+        classes: {
+          success: "alert-success",
+          error: "alert-danger",
+        },
+        title: {
+          success: "Success",
+          error: "Error",
+        },
+        text: {
+          success: "Your form was sent. Congratulations!",
+          error: "An unknown error occurred. Please try again.",
+        },
+      },
       maxLength: 255,
     };
   },
@@ -140,8 +182,10 @@ export default {
     async submitForm() {
       this.validateForm();
       if (
-        this.error.description.isValid === false ||
-        this.error.confirmation.isValid === false
+        !this.error.description.isValid ||
+        !this.error.confirmation.isValid ||
+        !this.error.vat.isValid ||
+        !this.error.priceNetto.isValid
       ) {
         return;
       } else {
@@ -152,16 +196,25 @@ export default {
           priceNetto: this.form.priceNetto,
           priceBrutto: this.priceBrutto,
         };
+        this.$store.commit("moduleForm/setSubmit", true);
+        this.form.description = "";
+        this.form.confirmation = null;
+        this.form.vat = null;
+        this.form.priceNetto = "";
         try {
-          const response = await axios.post(
-            `https://form-app-om-default-rtdb.firebaseio.com/forms.json
-`,
+          await this.$http.post(
+            `https://form-app-om-default-rtdb.firebaseio.com/forms.json`,
             data
           );
-          console.log(response.data);
-          this.isSubmited = true;
+          this.formValid = true;
         } catch (error) {
-          console.log(error);
+          if (error.message) {
+            this.alert.text.error = error.message;
+          } else {
+            this.alert.text.error =
+              "An unknown error occurred. Please try again.";
+          }
+          this.formValid = false;
         }
       }
     },
@@ -196,17 +249,17 @@ export default {
       }
     },
     validateNetto() {
-      const regex = /^\d+(?:(,\d{1,2})|(.\d{1,2}))?$/;
-      if (!regex.test(this.form.priceNetto) || this.form.priceNetto === "") {
+      const checkNetto = /^\d+([,.][0-9]{1,2})?$/;
+      if (
+        !checkNetto.test(this.form.priceNetto) ||
+        this.form.priceNetto === ""
+      ) {
         this.error.priceNetto.isValid = false;
         this.error.priceNetto.text = "Please, input number.";
       } else {
         this.error.priceNetto.isValid = true;
         this.error.priceNetto.text = "";
       }
-    },
-    handleCustomChange(e) {
-      this.form.confirmation = e;
     },
     validateForm() {
       this.validateDescription();
@@ -216,10 +269,14 @@ export default {
         this.validateNetto();
       }
     },
+    submitAgain() {
+      this.$store.commit("moduleForm/setSubmit", false);
+    },
   },
   computed: {
     priceBrutto() {
-      if (this.form.priceNetto !== "") {
+      const isNumber = /^[0-9]/;
+      if (this.form.priceNetto !== "" && isNumber.test(this.form.priceNetto)) {
         return (
           parseFloat(this.form.priceNetto.replace(",", ".")) +
           parseFloat(this.form.priceNetto.replace(",", ".")) *
@@ -237,17 +294,13 @@ export default {
 </script>
 
 <style scoped>
-.block {
-  display: block;
-}
 .form-control.invalid input {
   border-color: red;
 }
 .form {
   height: 100vh;
   width: 100%;
-}
-.form-label.invalid {
-  color: red;
+  font-family: "Poppins Light";
+  font-size: 18px;
 }
 </style>
