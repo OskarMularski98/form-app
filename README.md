@@ -2,7 +2,7 @@
 
 ![FormGif](https://user-images.githubusercontent.com/56295769/206293043-d204c6b5-f16b-41c6-8857-3c045f261aac.gif)
 
-
+```
 ## Project setup
 ```
 npm install
