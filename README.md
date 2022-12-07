@@ -16,9 +16,11 @@
 * Text input with label "Price butto EUR" is always disabled but it shows value calculated using from "Price netto EUR" text input and value from vat selector.
 * Submit button validates the form, in case form is valid, form hides and success alert shows. Whem form is invalid, form also hides but error alert show.
 
+
 # 📄 Download
 ```
 git clone https://github.com/OskarMularski98/form-app.git
+```
 
 # 📄 Project setup
 ```
